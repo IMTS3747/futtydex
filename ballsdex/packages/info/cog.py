@@ -130,9 +130,9 @@ class Info(commands.Cog):
             owner = bot_info.owner
         owner_credits = "by the team" if bot_info.team else "by"
         dex_credits = (
-            f"This instance is owned {owner_credits} {owner}.\nAn instance of [Ballsdex]"
-            f"({settings.repository}) by El Laggron and maintained by the Ballsdex Team "
-            f"and community of [contributors]({settings.repository}/graphs/contributors)."
+            f"This instance is owned by @Void."
+            f"Developed by @imts3747.\n Co Owners: Azmin & Sonex."
+            f"This bot uses the BallsDex source code by El Laggron."
         )
         embed.description = (
             f"{' '.join(str(x) for x in balls)}\n"
@@ -144,8 +144,6 @@ class Info(commands.Cog):
             f"**{balls_instances_count:,}** {settings.plural_collectible_name}\n"
             f"**{len(self.bot.guilds):,}** servers playing\n\n"
             f"{dex_credits}\n\n"
-            "Consider supporting El Laggron on "
-            "[Patreon](https://patreon.com/retke) :heart:\n\n"
             f"[Discord server]({settings.discord_invite}) • [Invite me]({invite_link}) • "
             f"[Source code and issues]({settings.repository})\n"
             f"[Terms of Service]({settings.terms_of_service}) • "
