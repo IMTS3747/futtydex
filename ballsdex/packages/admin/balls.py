@@ -237,6 +237,7 @@ async def balls_info(ctx: commands.Context[BallsDexBot], countryball_id: str):
         f"**Attack bonus:** {ball.attack_bonus}\n"
         f"**Health bonus:** {ball.health_bonus}\n"
         f"**Health:** {ball.health}\n"
+        f"**POS:** {ball.countryball.positions_display}\n"
         f"**Special:** {ball.special.name if ball.special else None}\n"
         f"**Caught at:** {format_dt(ball.catch_date, style='R')}\n"
         f"**Spawned at:** {spawned_time}\n"

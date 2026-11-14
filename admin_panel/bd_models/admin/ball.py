@@ -1,5 +1,6 @@
 from typing import TYPE_CHECKING, Any
 
+from django import forms
 from django.contrib import admin
 from django.contrib.admin.utils import quote
 from django.forms import Textarea
@@ -8,7 +9,17 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.utils.text import capfirst
 
-from ..models import Ball, BallGroup, BallInstance, Economy, Regime, TradeObject, transform_media
+from ..models import (
+    BALL_POSITION_CHOICES,
+    Ball,
+    BallGroup,
+    BallInstance,
+    Economy,
+    Regime,
+    TradeObject,
+    balls,
+    transform_media,
+)
 
 if TYPE_CHECKING:
     from django.db.models import Field, Model, QuerySet
@@ -81,11 +92,39 @@ class BallGroupAdmin(admin.ModelAdmin):
 
 @admin.register(Ball)
 class BallAdmin(admin.ModelAdmin):
+    class BallAdminForm(forms.ModelForm):
+        positions = forms.MultipleChoiceField(
+            label="POSITIONS",
+            choices=BALL_POSITION_CHOICES,
+            required=False,
+            help_text="Select one or more positions. Leave empty if this Futtydex has no position.",
+            widget=forms.SelectMultiple(attrs={"size": 4}),
+        )
+
+        class Meta:
+            model = Ball
+            fields = "__all__"
+
+    form = BallAdminForm
     autocomplete_fields = ("regime", "economy")
     readonly_fields = ("collection_image", "spawn_image")
     save_on_top = True
     fieldsets = [
-        (None, {"fields": ["country", "health", "attack", "rarity", "emoji_id", "economy", "regime"]}),
+        (
+            None,
+            {
+                "fields": [
+                    "country",
+                    "health",
+                    "attack",
+                    "rarity",
+                    "emoji_id",
+                    "economy",
+                    "positions",
+                    "regime",
+                ]
+            },
+        ),
         (
             "Assets",
             {
@@ -114,6 +153,17 @@ class BallAdmin(admin.ModelAdmin):
 
     search_fields = ["country", "capacity_name", "capacity_description", "catch_names", "translations", "credits", "pk"]
     search_help_text = "Search for countryball name, ID, ability name/content, credits, catch names or translations"
+
+    def save_model(
+        self,
+        request: "HttpRequest",
+        obj: Ball,
+        form: "forms.ModelForm",
+        change: bool,
+    ) -> None:
+        super().save_model(request, obj, form, change)
+        # Keep the bot's in-memory Ball cache in sync with admin-panel edits.
+        balls[obj.pk] = obj
 
     @admin.display(description="Emoji")
     def emoji(self, obj: Ball):

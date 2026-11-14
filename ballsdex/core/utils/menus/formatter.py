@@ -115,6 +115,7 @@ class CountryballFormatter(Formatter[QuerySet[BallInstance], discord.ui.Select])
                 description=(
                     f"ATK: {ball.attack}({ball.attack_bonus:+d}%) "
                     f"• HP: {ball.health}({ball.health_bonus:+d}%) • "
+                    f"POS: {ball.countryball.positions_display} • "
                     f"{ball.catch_date.strftime('%Y/%m/%d | %H:%M')}"
                 ),
                 emoji=emoji,

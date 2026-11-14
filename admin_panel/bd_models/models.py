@@ -46,6 +46,19 @@ economies: dict[int, Economy] = {}
 specials: dict[int, Special] = {}
 groups: dict[int, BallGroup] = {}
 
+BALL_POSITION_CHOICES = (
+    ("attacker", "Attacker"),
+    ("midfielder", "Midfielder"),
+    ("defender", "Defender"),
+    ("goalkeeper", "Goalkeeper"),
+)
+BALL_POSITION_ABBREVIATIONS = (
+    ("attacker", "ATK"),
+    ("midfielder", "MF"),
+    ("defender", "DEF"),
+    ("goalkeeper", "GK"),
+)
+
 
 class QuerySet[T: models.Model](models.QuerySet[T]):
     def get_or_none(self, *args: Any, **kwargs: Any) -> T | None:
@@ -312,6 +325,11 @@ class Ball(models.Model):
         Economy, on_delete=models.SET_NULL, blank=True, null=True, help_text="Economical regime of this country"
     )
     economy_id: int | None
+    positions = models.JSONField(
+        blank=True,
+        default=list,
+        help_text="Positions this Futtydex can play. Select one or more, or leave empty for no position.",
+    )
     regime = models.ForeignKey(Regime, on_delete=models.CASCADE, help_text="Political regime of this country")
     regime_id: int
     created_at = models.DateTimeField(blank=True, null=True, auto_now_add=True, editable=False)
@@ -335,6 +353,16 @@ class Ball(models.Model):
     @property
     def cached_economy(self) -> Economy | None:
         return economies.get(self.economy_id) or self.economy if self.economy_id else None
+
+    @property
+    def positions_display(self) -> str:
+        selected_positions = set(self.positions or [])
+        abbreviations = [
+            abbreviation
+            for position, abbreviation in BALL_POSITION_ABBREVIATIONS
+            if position in selected_positions
+        ]
+        return "/".join(abbreviations) if abbreviations else "None"
 
     def __str__(self) -> str:
         return self.country
@@ -493,7 +521,10 @@ class BallInstance(models.Model):
     ) -> str:
         text = self.short_description(is_trade=is_trade)
         if not short:
-            text += f" ATK:{self.attack_bonus:+d}% HP:{self.health_bonus:+d}%"
+            text += (
+                f" ATK:{self.attack_bonus:+d}% HP:{self.health_bonus:+d}%"
+                f" POS: {self.countryball.positions_display}"
+            )
         if include_emoji:
             if not bot:
                 raise TypeError("You need to provide the bot argument when using with include_emoji=True")
@@ -546,7 +577,8 @@ class BallInstance(models.Model):
             f"Caught on {format_dt(self.catch_date)}{catch_time_msg} ({format_dt(self.catch_date, style='R')}).\n"
             f"{trade_content}\n"
             f"ATK: {self.attack} ({self.attack_bonus:+d}%)\n"
-            f"HP: {self.health} ({self.health_bonus:+d}%)"
+            f"HP: {self.health} ({self.health_bonus:+d}%)\n"
+            f"POS: {self.countryball.positions_display}"
         )
 
         # draw image

@@ -138,7 +138,7 @@ def draw_card(ball_instance: "BallInstance") -> tuple[Image.Image, dict[str, Any
         credits_color_cache[card_name] = credits_color
     draw.text(
             (33, 1870),
-            f"Created by El Laggron\nOwners: @whogivesafuck, @Sonex\n Dev & Co-Owner: @imts3747, @azmir, @Trev",
+            f"Created by El Laggron\nOwners: @Void, @Sonex\n Developer: @imts3747",
             font=credits_font,
             fill=credits_color,
             stroke_width=0,
